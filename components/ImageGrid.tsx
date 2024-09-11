@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, FlatList, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/hooks/redux/store';
 import { fetchImages } from '@/hooks/redux/store';
-import { Image } from 'expo-image'; 
+import { Image } from 'expo-image';
 
 type RootStackParamList = {
   ImageDetailScreen: { imageUrl: string; title: string };
@@ -18,9 +18,11 @@ const ImageGrid: React.FC = () => {
   const images = useSelector((state: RootState) => state.images);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'ImageDetailScreen'>>();
   const [itemWidth, setItemWidth] = useState(Dimensions.get('window').width / numColumns);
+  const [isLoading, setIsLoading] = useState(false); // Loading state for lazy loading
+  const [page, setPage] = useState(1); // Track the page number for lazy loading
 
   useEffect(() => {
-    dispatch(fetchImages());
+    loadImages(); // Initial load
 
     const updateLayout = () => {
       const { width } = Dimensions.get('window');
@@ -36,10 +38,22 @@ const ImageGrid: React.FC = () => {
     };
   }, [dispatch]);
 
-  const renderItem = ({ item }: { item: { id: number; thumbnailUrl: string; url: string; title:string} }) => (
+  const loadImages = async () => {
+    if (isLoading) return; // Prevent multiple fetches
+    setIsLoading(true);
+    await dispatch(fetchImages(page)); // Fetch images for the current page
+    setIsLoading(false);
+  };
+
+  const handleEndReached = () => {
+    setPage((prevPage) => prevPage + 1); // Increment the page number
+    loadImages(); // Load next set of images
+  };
+
+  const renderItem = ({ item }: { item: { id: number; thumbnailUrl: string; url: string; title: string } }) => (
     <TouchableOpacity
       style={[styles.item, { width: itemWidth, height: itemWidth }]}
-      onPress={() => navigation.navigate('ImageDetailScreen',{ imageUrl: item.url, title: item.title })}
+      onPress={() => navigation.navigate('ImageDetailScreen', { imageUrl: item.url, title: item.title })}
     >
       <Image source={{ uri: item.thumbnailUrl }} cachePolicy="disk" style={styles.image} />
     </TouchableOpacity>
@@ -54,6 +68,9 @@ const ImageGrid: React.FC = () => {
       contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}
       key={itemWidth} // Ensures FlatList re-renders on orientation change
+      onEndReached={handleEndReached} // Trigger loading more items when the end is reached
+      onEndReachedThreshold={0.5} // Trigger when half the list height is reached
+      ListFooterComponent={isLoading ? <ActivityIndicator size="large" color="#0000ff" /> : null} // Show loading spinner
     />
   );
 };
