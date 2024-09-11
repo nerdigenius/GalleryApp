@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, FlatList, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator,TextInput,Text  } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
@@ -20,6 +20,10 @@ const ImageGrid: React.FC = () => {
   const [itemWidth, setItemWidth] = useState(Dimensions.get('window').width / numColumns);
   const [isLoading, setIsLoading] = useState(false); // Loading state for lazy loading
   const [page, setPage] = useState(1); // Track the page number for lazy loading
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredImages, setFilteredImages] = useState(images);
+
+
 
   useEffect(() => {
     loadImages(); // Initial load
@@ -38,6 +42,20 @@ const ImageGrid: React.FC = () => {
     };
   }, [dispatch]);
 
+  useEffect(() => {
+    // Filter images based on search query whenever it changes
+    if (searchQuery) {
+      const filtered = images.filter(
+        (image) =>
+          image.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          image.albumId.toString().includes(searchQuery)
+      );
+      setFilteredImages(filtered);
+    } else {
+      setFilteredImages(images);
+    }
+  }, [searchQuery, images]);
+
   const loadImages = async () => {
     if (isLoading) return; // Prevent multiple fetches
     setIsLoading(true);
@@ -46,22 +64,32 @@ const ImageGrid: React.FC = () => {
   };
 
   const handleEndReached = () => {
-    setPage((prevPage) => prevPage + 1); // Increment the page number
-    loadImages(); // Load next set of images
+    if (!isLoading && !searchQuery) { // Only load more images when not searching
+      setPage((prevPage) => prevPage + 1); // Increment the page number
+      loadImages(); // Load next set of images
+    }
   };
 
-  const renderItem = ({ item }: { item: { id: number; thumbnailUrl: string; url: string; title: string } }) => (
+  const renderItem = ({ item }: { item: { id: number; thumbnailUrl: string; url: string; title: string ,albumId: number} }) => (
     <TouchableOpacity
-      style={[styles.item, { width: itemWidth, height: itemWidth }]}
+      style={[styles.item, { width: itemWidth }]}
       onPress={() => navigation.navigate('ImageDetailScreen', { imageUrl: item.url, title: item.title })}
     >
       <Image source={{ uri: item.thumbnailUrl }} cachePolicy="disk" style={styles.image} />
+      <Text>Title: {item.title}</Text>
+      <Text>Album Id: {item.albumId}</Text>
     </TouchableOpacity>
   );
 
   return (
-    <FlatList
-      data={images}
+   
+    <View>
+      <TextInput style={styles.searchBar}
+        placeholder="Search by title or album"
+        value={searchQuery}
+        onChangeText={(text) => setSearchQuery(text)}/>
+<FlatList
+      data={filteredImages}
       renderItem={renderItem}
       keyExtractor={(item) => item.id.toString()}
       numColumns={numColumns}
@@ -72,6 +100,9 @@ const ImageGrid: React.FC = () => {
       onEndReachedThreshold={0.5} // Trigger when half the list height is reached
       ListFooterComponent={isLoading ? <ActivityIndicator size="large" color="#0000ff" /> : null} // Show loading spinner
     />
+    </View>
+    
+    
   );
 };
 
@@ -84,9 +115,17 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: '100%',
+    height: 100,
     resizeMode: 'cover',
   },
+  searchBar: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    margin: 10,
+  }
 });
 
 export default ImageGrid;
