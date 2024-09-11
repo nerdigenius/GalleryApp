@@ -1,30 +1,44 @@
-import React, { useEffect } from 'react';
-import { View, FlatList, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, FlatList, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/hooks/redux/store';
-
 import { fetchImages } from '@/hooks/redux/store';
+import { Image } from 'expo-image'; 
+
+
 
 const numColumns = 3;
-const { width } = Dimensions.get('window');
-const itemWidth = width / numColumns;
 
 const ImageGrid: React.FC = () => {
   const dispatch = useDispatch();
   const images = useSelector((state: RootState) => state.images);
+  const [itemWidth, setItemWidth] = useState(Dimensions.get('window').width / numColumns);
 
   useEffect(() => {
     dispatch(fetchImages());
+
+    const updateLayout = () => {
+      const { width } = Dimensions.get('window');
+      setItemWidth(width / numColumns);
+    };
+
+    // Add event listener for orientation changes
+    const subscription = Dimensions.addEventListener('change', updateLayout);
+
+    // Cleanup the listener on unmount
+    return () => {
+      subscription?.remove();
+    };
   }, [dispatch]);
 
-  const renderItem = ({ item }: { item: { id: number; thumbnailUrl: string; url: string } }) => (
+  const renderItem = ({ item }: { item: { id: number; thumbnailUrl: string; url: string; title:string} }) => (
     <TouchableOpacity
-      style={styles.item}
-      
+      style={[styles.item, { width: itemWidth, height: itemWidth }]}
+      onPress={() => navigation.navigate('ImageDetailScreen',{ imageUrl: item.url, title: item.title })}
     >
-      <Image source={{ uri: item.thumbnailUrl }} style={styles.image} />
+      <Image source={{ uri: item.thumbnailUrl }} cachePolicy="disk" style={styles.image} />
     </TouchableOpacity>
   );
 
@@ -35,6 +49,8 @@ const ImageGrid: React.FC = () => {
       keyExtractor={(item) => item.id.toString()}
       numColumns={numColumns}
       contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+      key={itemWidth} // Ensures FlatList re-renders on orientation change
     />
   );
 };
@@ -44,12 +60,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   item: {
-    flex: 1,
     margin: 2,
   },
   image: {
-    width: itemWidth - 4, // Adjust for margin
-    height: itemWidth - 4, // Make the image square
+    width: '100%',
+    height: '100%',
     resizeMode: 'cover',
   },
 });
