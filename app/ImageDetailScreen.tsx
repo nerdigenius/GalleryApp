@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, Button, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context'; // Import SafeAreaView
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Image, Button, ScrollView, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 
@@ -9,7 +9,6 @@ type RootStackParamList = {
     imageUrl: string;
     title: string;
   };
-  // other routes can be added here
 };
 
 type ImageDetailScreenRouteProp = RouteProp<RootStackParamList, 'ImageDetail'>;
@@ -18,11 +17,23 @@ const ImageDetailScreen: React.FC = () => {
   const route = useRoute<ImageDetailScreenRouteProp>();
   const { imageUrl, title } = route.params;
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [loading, setLoading] = useState(true);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollView}>
-        <Image source={{ uri: imageUrl }} style={styles.image} />
+        {loading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
+        )}
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.image}
+          onLoadStart={() => setLoading(true)}
+          onLoadEnd={() => setLoading(false)}
+          
+        />
         <Text style={styles.title}>{title}</Text>
         <Button title="Back to Gallery" onPress={() => navigation.goBack()} />
       </ScrollView>
@@ -39,6 +50,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -15 }, { translateY: -15 }],
+    zIndex: 1,
   },
   image: {
     width: '100%',

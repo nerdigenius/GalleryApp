@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator, TextInput, Text } from 'react-native';
+import { View, FlatList, StyleSheet, Dimensions, Pressable, ActivityIndicator, TextInput, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
@@ -71,14 +71,14 @@ const ImageGrid: React.FC = () => {
   };
 
   const renderItem = ({ item }: { item: { id: number; thumbnailUrl: string; url: string; title: string, albumId: number } }) => (
-    <TouchableOpacity
+    <Pressable
       style={[styles.item, { width: itemWidth }]}
       onPress={() => navigation.navigate('ImageDetailScreen', { imageUrl: item.url, title: item.title })}
     >
       <Image source={{ uri: item.thumbnailUrl }} cachePolicy="disk" style={styles.image} />
       <Text>Title: {item.title}</Text>
       <Text>Album Id: {item.albumId}</Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 
   return (
