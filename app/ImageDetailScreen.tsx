@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, Button, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Button, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-
+import { Image } from 'expo-image';
 type RootStackParamList = {
   ImageDetail: {
     imageUrl: string;
@@ -32,7 +32,7 @@ const ImageDetailScreen: React.FC = () => {
           style={styles.image}
           onLoadStart={() => setLoading(true)}
           onLoadEnd={() => setLoading(false)}
-          
+          cachePolicy="disk"
         />
         <Text style={styles.title}>{title}</Text>
         <Button title="Back to Gallery" onPress={() => navigation.goBack()} />
