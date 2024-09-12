@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator,TextInput,Text  } from 'react-native';
+import { View, FlatList, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator, TextInput, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
@@ -70,7 +70,7 @@ const ImageGrid: React.FC = () => {
     }
   };
 
-  const renderItem = ({ item }: { item: { id: number; thumbnailUrl: string; url: string; title: string ,albumId: number} }) => (
+  const renderItem = ({ item }: { item: { id: number; thumbnailUrl: string; url: string; title: string, albumId: number } }) => (
     <TouchableOpacity
       style={[styles.item, { width: itemWidth }]}
       onPress={() => navigation.navigate('ImageDetailScreen', { imageUrl: item.url, title: item.title })}
@@ -82,34 +82,38 @@ const ImageGrid: React.FC = () => {
   );
 
   return (
-   
-    <View>
+
+    <View style={styles.container}>
       <TextInput style={styles.searchBar}
         placeholder="Search by title or album"
         value={searchQuery}
-        onChangeText={(text) => setSearchQuery(text)}/>
-<FlatList
-      data={filteredImages}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id.toString()}
-      numColumns={numColumns}
-      contentContainerStyle={styles.container}
-      showsVerticalScrollIndicator={false}
-      key={itemWidth} // Ensures FlatList re-renders on orientation change
-      onEndReached={handleEndReached} // Trigger loading more items when the end is reached
-      onEndReachedThreshold={0.5} // Trigger when half the list height is reached
-      ListFooterComponent={isLoading ? <ActivityIndicator size="large" color="#0000ff" /> : null} // Show loading spinner
-    />
+        onChangeText={(text) => setSearchQuery(text)} />
+      <FlatList
+        data={filteredImages}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
+        numColumns={numColumns}
+        showsVerticalScrollIndicator={false}
+        key={itemWidth} // Ensures FlatList re-renders on orientation change
+        onEndReached={handleEndReached} // Trigger loading more items when the end is reached
+        onEndReachedThreshold={0.5} // Trigger when half the list height is reached
+        ListFooterComponent={isLoading ? <ActivityIndicator size="large" color="#0000ff" /> : null} // Show loading spinner
+      />
     </View>
-    
-    
+
+
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+   flex:1,
+    width:"100%",
   },
+  grid:{
+    
+  },
+
   item: {
     margin: 2,
   },
@@ -125,6 +129,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingHorizontal: 10,
     margin: 10,
+
   }
 });
 
