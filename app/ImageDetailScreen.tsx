@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Button, ScrollView, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context'; 
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Image } from 'expo-image';
+
 type RootStackParamList = {
   ImageDetail: {
     imageUrl: string;
@@ -18,22 +19,36 @@ const ImageDetailScreen: React.FC = () => {
   const { imageUrl, title } = route.params;
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null); // State to store error message
+
+  const handleError = (event: any) => {
+    setLoading(false);
+    setError(event.nativeEvent.error); // Capture specific error message
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollView}>
-        {loading && (
+        {loading && !error && (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#0000ff" />
           </View>
         )}
-        <Image
-          source={{ uri: imageUrl }}
-          style={styles.image}
-          onLoadStart={() => setLoading(true)}
-          onLoadEnd={() => setLoading(false)}
-          cachePolicy="disk"
-        />
+        {error ? (
+          <Text style={styles.errorText}>Error loading image: {error}</Text>
+        ) : (
+          <Image
+            source={{ uri: imageUrl }}
+            style={styles.image}
+            onLoadStart={() => {
+              setLoading(true);
+              setError(null);
+            }}
+            onLoadEnd={() => setLoading(false)}
+            onError={handleError} // Use handleError function to capture error
+            cachePolicy="disk"
+          />
+        )}
         <Text style={styles.title}>{title}</Text>
         <Button title="Back to Gallery" onPress={() => navigation.goBack()} />
       </ScrollView>
@@ -66,6 +81,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  errorText: {
+    fontSize: 16,
+    color: 'red',
     marginBottom: 20,
     textAlign: 'center',
   },
