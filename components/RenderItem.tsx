@@ -26,7 +26,11 @@ export default function RenderItem({ item, itemWidth }: RenderItemProps) {
 
   const handleError = (event: any) => {
     setLoading(false);
-    setError(event.nativeEvent.error);
+    setError(event.error);
+  };
+  const handleReload = () => {
+    setError(null); // Clear error
+    setLoading(true); // Show loading indicator
   };
 
   return (
@@ -39,7 +43,13 @@ export default function RenderItem({ item, itemWidth }: RenderItemProps) {
         <ActivityIndicator size="small" color="#0000ff" />
       )}
       {error ? (
-        <Text style={styles.errorText}>Error loading image: {error}</Text>
+        <Pressable onPress={handleReload} style={styles.reloadContainer}>
+        <ExpoImage
+          source={require("@/assets/images/reload.svg")} 
+          style={styles.reloadIcon}
+        />
+        <Text style={styles.errorText}>Tap to reload {error}</Text>
+      </Pressable>
       ) : (
         <ExpoImage
           source={{ uri: item.thumbnailUrl }}
@@ -74,4 +84,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
   },
+  reloadContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 5,
+  },
+  reloadIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 8,
+  }
 });
