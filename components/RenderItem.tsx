@@ -63,6 +63,7 @@ export default function RenderItem({ item, itemWidth }: RenderItemProps) {
           onError={handleError}
         />
       )}
+      <Text>ID: {item.id}</Text>
       <Text>Title: {item.title}</Text>
       <Text>Album Id: {item.albumId}</Text>
     </Pressable>
@@ -71,7 +72,7 @@ export default function RenderItem({ item, itemWidth }: RenderItemProps) {
 
 const styles = StyleSheet.create({
   item: {
-    margin: 2,
+    padding: 4,
   },
   image: {
     width: '100%',
