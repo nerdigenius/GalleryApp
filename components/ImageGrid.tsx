@@ -18,12 +18,10 @@ const ImageGrid: React.FC = () => {
   const images = useSelector((state: RootState) => state.images);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'ImageDetailScreen'>>();
   const [itemWidth, setItemWidth] = useState(Dimensions.get('window').width / numColumns);
-  const [isLoading, setIsLoading] = useState(false); // Loading state for lazy loading
-  const [page, setPage] = useState(1); // Track the page number for lazy loading
+  const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredImages, setFilteredImages] = useState(images);
-
-
 
   useEffect(() => {
     loadImages(); // Initial load
@@ -64,33 +62,64 @@ const ImageGrid: React.FC = () => {
   };
 
   const handleEndReached = () => {
-    if (!isLoading && !searchQuery) { // Only load more images when not searching
+    if (!isLoading && !searchQuery) {
       setPage((prevPage) => prevPage + 1); // Increment the page number
       loadImages(); // Load next set of images
     }
   };
 
-  const renderItem = ({ item }: { item: { id: number; thumbnailUrl: string; url: string; title: string, albumId: number } }) => (
-    <Pressable
-      style={[styles.item, { width: itemWidth }]}
-      onPress={() => navigation.navigate('ImageDetailScreen', { imageUrl: item.url, title: item.title })}
-    >
-      <Image source={{ uri: item.thumbnailUrl }} cachePolicy="disk" style={styles.image} />
-      <Text>Title: {item.title}</Text>
-      <Text>Album Id: {item.albumId}</Text>
-    </Pressable>
-  );
+  // Defined the renderItem as a functional component
+  const RenderItem: React.FC<{ item: { id: number; thumbnailUrl: string; url: string; title: string; albumId: number } }> = ({ item }) => {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleError = (event: any) => {
+      setLoading(false);
+      setError(event.nativeEvent.error); // Capture specific technical error message
+    };
+
+    return (
+      <Pressable
+        style={[styles.item, { width: itemWidth }]}
+        onPress={() => navigation.navigate('ImageDetailScreen', { imageUrl: item.url, title: item.title })}
+      >
+        {loading && !error && (
+          
+            <ActivityIndicator size="small" color="#0000ff" />
+          
+        )}
+        {error ? (
+          <Text style={styles.errorText}>Error loading image: {error}</Text>
+        ) : (
+          <Image
+            source={{ uri: item.thumbnailUrl }}
+            cachePolicy="disk"
+            style={styles.image}
+            onLoadStart={() => {
+              setLoading(true);
+              setError(null);
+            }}
+            onLoadEnd={() => setLoading(false)}
+            onError={handleError}
+          />
+        )}
+        <Text>Title: {item.title}</Text>
+        <Text>Album Id: {item.albumId}</Text>
+      </Pressable>
+    );
+  };
 
   return (
-
     <View style={styles.container}>
-      <TextInput style={styles.searchBar}
+      <TextInput
+        style={styles.searchBar}
         placeholder="Search by title or album"
         value={searchQuery}
-        onChangeText={(text) => setSearchQuery(text)} />
+        onChangeText={(text) => setSearchQuery(text)}
+      />
       <FlatList
         data={filteredImages}
-        renderItem={renderItem}
+        renderItem={({ item }) => <RenderItem item={item} />} // Use RenderItem as a component
         keyExtractor={(item) => item.id.toString()}
         numColumns={numColumns}
         showsVerticalScrollIndicator={false}
@@ -100,20 +129,14 @@ const ImageGrid: React.FC = () => {
         ListFooterComponent={isLoading ? <ActivityIndicator size="large" color="#0000ff" /> : null} // Show loading spinner
       />
     </View>
-
-
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-   flex:1,
-    width:"100%",
+    flex: 1,
+    width: '100%',
   },
-  grid:{
-    
-  },
-
   item: {
     margin: 2,
   },
@@ -129,8 +152,16 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingHorizontal: 10,
     margin: 10,
-
-  }
+  },
+  errorText: {
+    fontSize: 16,
+    color: 'red',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    height: 100,
+  },
 });
 
 export default ImageGrid;

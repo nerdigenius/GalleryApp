@@ -23,7 +23,7 @@ const ImageDetailScreen: React.FC = () => {
 
   const handleError = (event: any) => {
     setLoading(false);
-    setError(event.nativeEvent.error); // Capture specific error message
+    setError(event.error); // Capture specific technical error message
   };
 
   return (
@@ -45,7 +45,7 @@ const ImageDetailScreen: React.FC = () => {
               setError(null);
             }}
             onLoadEnd={() => setLoading(false)}
-            onError={handleError} // Use handleError function to capture error
+            onError={handleError}
             cachePolicy="disk"
           />
         )}
