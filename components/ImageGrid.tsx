@@ -7,13 +7,14 @@ import { RootState } from '@/hooks/redux/store';
 import { fetchImages } from '@/hooks/redux/store';
 import { Image } from 'expo-image';
 
+
 type RootStackParamList = {
   ImageDetailScreen: { imageUrl: string; title: string };
 };
 
 const numColumns = 3;
 
-const ImageGrid: React.FC = () => {
+export default function ImageGrid(){
   const dispatch = useDispatch();
   const images = useSelector((state: RootState) => state.images);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'ImageDetailScreen'>>();
@@ -164,4 +165,3 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ImageGrid;

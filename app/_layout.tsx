@@ -2,7 +2,6 @@ import { store } from "@/hooks/redux/store";
 import { Stack } from "expo-router";
 import React from "react";
 import { Provider } from "react-redux";
-import ImageDetailScreen from "./ImageDetailScreen";
 
 
 
