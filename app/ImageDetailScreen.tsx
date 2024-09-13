@@ -19,11 +19,18 @@ const ImageDetailScreen: React.FC = () => {
   const { imageUrl, title } = route.params;
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); // State to store error message
+  const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0); // State to trigger image reload
 
-  const handleError = (event: any) => {
+  const handleError = (event: { error: string }) => {
     setLoading(false);
-    setError(event.error); // Capture specific technical error message
+    setError(event.error);
+  };
+
+  const handleReload = () => {
+    setReloadKey((prevKey) => prevKey + 1); // Change key to trigger reload
+    setError(null);
+    setLoading(true);
   };
 
   return (
@@ -35,9 +42,13 @@ const ImageDetailScreen: React.FC = () => {
           </View>
         )}
         {error ? (
-          <Text style={styles.errorText}>Error loading image: {error}</Text>
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Error loading image: {error}</Text>
+            <Button title="Reload" onPress={handleReload} />
+          </View>
         ) : (
           <Image
+            key={reloadKey} // Key changes on reload
             source={{ uri: imageUrl }}
             style={styles.image}
             onLoadStart={() => {
@@ -73,6 +84,11 @@ const styles = StyleSheet.create({
     transform: [{ translateX: -15 }, { translateY: -15 }],
     zIndex: 1,
   },
+  errorContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   image: {
     width: '100%',
     height: 300,
@@ -87,7 +103,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 16,
     color: 'red',
-    marginBottom: 20,
+    marginBottom: 10,
     textAlign: 'center',
   },
 });
