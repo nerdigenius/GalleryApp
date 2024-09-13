@@ -25,6 +25,13 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
+## Additional Features Implemented
+
+I have added some additional features to it
+
+- A reload button in case the images failed
+- A loading spinner while the user waits for the image download to finish
+- Display error message for the images that fails to load
 
 ## Learn more
 
