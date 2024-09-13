@@ -1,23 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet, Dimensions, Pressable, ActivityIndicator, TextInput, Text } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { View, FlatList, StyleSheet, Dimensions, TextInput, ActivityIndicator } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/hooks/redux/store';
 import { fetchImages } from '@/hooks/redux/store';
-import { Image } from 'expo-image';
-
-
-type RootStackParamList = {
-  ImageDetailScreen: { imageUrl: string; title: string };
-};
+import RenderItem from './RenderItem'; // Import the RenderItem component
 
 const numColumns = 3;
 
-export default function ImageGrid(){
+export default function ImageGrid() {
   const dispatch = useDispatch();
   const images = useSelector((state: RootState) => state.images);
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'ImageDetailScreen'>>();
   const [itemWidth, setItemWidth] = useState(Dimensions.get('window').width / numColumns);
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -69,47 +61,6 @@ export default function ImageGrid(){
     }
   };
 
-  // Defined the renderItem as a functional component
-  const RenderItem: React.FC<{ item: { id: number; thumbnailUrl: string; url: string; title: string; albumId: number } }> = ({ item }) => {
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const handleError = (event: any) => {
-      setLoading(false);
-      setError(event.nativeEvent.error); // Capture specific technical error message
-    };
-
-    return (
-      <Pressable
-        style={[styles.item, { width: itemWidth }]}
-        onPress={() => navigation.navigate('ImageDetailScreen', { imageUrl: item.url, title: item.title })}
-      >
-        {loading && !error && (
-          
-            <ActivityIndicator size="small" color="#0000ff" />
-          
-        )}
-        {error ? (
-          <Text style={styles.errorText}>Error loading image: {error}</Text>
-        ) : (
-          <Image
-            source={{ uri: item.thumbnailUrl }}
-            cachePolicy="disk"
-            style={styles.image}
-            onLoadStart={() => {
-              setLoading(true);
-              setError(null);
-            }}
-            onLoadEnd={() => setLoading(false)}
-            onError={handleError}
-          />
-        )}
-        <Text>Title: {item.title}</Text>
-        <Text>Album Id: {item.albumId}</Text>
-      </Pressable>
-    );
-  };
-
   return (
     <View style={styles.container}>
       <TextInput
@@ -120,7 +71,7 @@ export default function ImageGrid(){
       />
       <FlatList
         data={filteredImages}
-        renderItem={({ item }) => <RenderItem item={item} />} // Use RenderItem as a component
+        renderItem={({ item }) => <RenderItem item={item} itemWidth={itemWidth} />} // Use RenderItem as a component
         keyExtractor={(item) => item.id.toString()}
         numColumns={numColumns}
         showsVerticalScrollIndicator={false}
@@ -131,20 +82,12 @@ export default function ImageGrid(){
       />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: '100%',
-  },
-  item: {
-    margin: 2,
-  },
-  image: {
-    width: '100%',
-    height: 100,
-    resizeMode: 'cover',
   },
   searchBar: {
     height: 40,
@@ -154,14 +97,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     margin: 10,
   },
-  errorText: {
-    fontSize: 16,
-    color: 'red',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  loadingContainer: {
-    height: 100,
-  },
 });
-

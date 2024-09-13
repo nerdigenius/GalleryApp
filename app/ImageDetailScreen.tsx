@@ -14,7 +14,7 @@ type RootStackParamList = {
 
 type ImageDetailScreenRouteProp = RouteProp<RootStackParamList, 'ImageDetail'>;
 
-const ImageDetailScreen: React.FC = () => {
+export default function  ImageDetailScreen () {
   const route = useRoute<ImageDetailScreenRouteProp>();
   const { imageUrl, title } = route.params;
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -108,4 +108,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ImageDetailScreen;
+
